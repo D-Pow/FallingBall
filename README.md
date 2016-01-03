@@ -1,2 +1,2 @@
 # FallingBall
-A simple physics simulator with bouncing balls.
+A simple physics simulator with bouncing balls, written in Java.
