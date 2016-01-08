@@ -21,7 +21,7 @@ import javafx.stage.Stage;
 
 public class FallingBall extends Application{
     /**
-     * author: Devon
+     * author: D-Pow
      * 12-30-15
      */
     
