@@ -1,10 +1,5 @@
-package fallingball;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -12,10 +7,11 @@ import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
@@ -33,14 +29,28 @@ public class FallingBall extends Application{
     public void start(Stage primaryStage) throws Exception {
         MovingBall ballPane = new MovingBall();
         
+        //Make buttons
         HBox buttonBox = new HBox(4);
         Button addButton = new Button("Add Ball");
         addButton.setOnAction((ActionEvent e) -> ballPane.addBall());
-        Button physicsButton = new Button("Physics");
+        Button physicsButton = new Button("Gravity");
         physicsButton.setOnAction((ActionEvent e) -> ballPane.togglePhysics());
         Button resetButton = new Button("Reset");
         resetButton.setOnAction((ActionEvent e) -> ballPane.reset());
         buttonBox.getChildren().addAll(addButton, physicsButton, resetButton);
+        
+        //Add listener for Enter button
+        for (Node n : buttonBox.getChildren()){
+            Button b = (Button) n;
+            b.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>(){
+                @Override
+                public void handle(KeyEvent event) {
+                    if (event.getCode() == KeyCode.ENTER){
+                        b.fire();
+                    }
+                }
+            });
+        }
         
         //Use BorderPane as layout manager
         BorderPane pane = new BorderPane();
@@ -51,10 +61,12 @@ public class FallingBall extends Application{
         primaryStage.setScene(scene);
         primaryStage.setTitle("Falling_Ball");
         primaryStage.show();
-        primaryStage.setOnCloseRequest(e -> System.exit(0));
-        
     }
     
+    @Override
+    public void stop(){
+        System.exit(0);
+    }
 }
 
 class MovingBall extends Pane{
@@ -65,6 +77,11 @@ class MovingBall extends Pane{
         Thread thread = new Thread(()->{
             try {
                 while (true){
+                    //moveBall() alone doesn't work. runLater() is better
+                    //because runLater() makes a queue of everything
+                    //and processes the orders as they come.
+                    //moveBall() just tries to do it all at once and is
+                    //more prone to errors
                     Platform.runLater(()->moveBall());
                     TimeUnit.MILLISECONDS.sleep(sleepSpeed);
                 }
@@ -134,6 +151,15 @@ class MovingBall extends Pane{
                           //and hitting the wall again would turn it into +1
                           //if it were typed like this: "ball.dy *= -1;"
             ball.setCenterY(this.getHeight() - ball.radius - 10);
+            /**
+             * It was found that the ball.setCenterY had to be hard-coded for
+             * this because of the program registering the ball being farther
+             * than this.getHeight(), causing the velocity to be reset. It works
+             * now, though much worse than it should have.
+             * It should also be noted that the yVelocity below must be multiplied
+             * by a dampening coefficient (0.85 in this case) because otherwise
+             * the velocity will reach a stable speed and won't change after that.
+             */
             
             //If physics is enabled, do the following
             if (physics){
