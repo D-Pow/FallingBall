@@ -77,11 +77,6 @@ class MovingBall extends Pane{
         Thread thread = new Thread(()->{
             try {
                 while (true){
-                    //moveBall() alone doesn't work. runLater() is better
-                    //because runLater() makes a queue of everything
-                    //and processes the orders as they come.
-                    //moveBall() just tries to do it all at once and is
-                    //more prone to errors
                     Platform.runLater(()->moveBall());
                     TimeUnit.MILLISECONDS.sleep(sleepSpeed);
                 }
@@ -104,8 +99,6 @@ class MovingBall extends Pane{
     public void moveBall(){
         for (Node ballNode : this.getChildren()){
             Ball ball = (Ball) ballNode;
-            //Since "ball" is a node, I have to cast it as a (Ball) to get
-            //the methods in the class Ball
             if (physics){
                 //Notice how this is before the checkWallCollision.
                 //That's b/c the ball time needs to be reset if the ball
@@ -136,7 +129,7 @@ class MovingBall extends Pane{
         
         //Change the y-direction of the ball if it hits a wall
         //Move ball out of wall by the distance (how far it is into the wall)
-        //plus an extra pixel for safety
+        //plus some extra distance
         if (ball.getCenterX() + ball.radius > this.getWidth()){
             int distance = (int) (this.getWidth() - (ball.getCenterX() + ball.radius));
             ball.setCenterX(ball.getCenterX() - 1 + distance);
@@ -151,15 +144,6 @@ class MovingBall extends Pane{
                           //and hitting the wall again would turn it into +1
                           //if it were typed like this: "ball.dy *= -1;"
             ball.setCenterY(this.getHeight() - ball.radius - 10);
-            /**
-             * It was found that the ball.setCenterY had to be hard-coded for
-             * this because of the program registering the ball being farther
-             * than this.getHeight(), causing the velocity to be reset. It works
-             * now, though much worse than it should have.
-             * It should also be noted that the yVelocity below must be multiplied
-             * by a dampening coefficient (0.85 in this case) because otherwise
-             * the velocity will reach a stable speed and won't change after that.
-             */
             
             //If physics is enabled, do the following
             if (physics){
